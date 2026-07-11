@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#241b3a">
+  <title>Lori’s Singing Game</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎵</text></svg>">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main>
+
+    <!-- Welcome -->
+    <section id="screen-welcome" class="screen active">
+      <div class="hero">🎶</div>
+      <h1>Lori’s Singing Game</h1>
+      <p class="tagline">See a note. Sing it. Shine. ✨</p>
+      <button id="btn-start" class="btn primary big">Let’s sing! 🎤</button>
+      <button id="btn-welcome-settings" class="btn ghost">⚙️ Settings</button>
+      <p id="mic-error" class="error hidden"></p>
+      <p class="credits">Piano sound: Salamander Grand Piano by Alexander Holm (CC-BY)</p>
+    </section>
+
+    <!-- Range finder -->
+    <section id="screen-range" class="screen">
+      <h2 id="range-title">Find your range</h2>
+      <p id="range-instructions" class="instructions"></p>
+      <div class="staff-card small">
+        <div id="range-staff-holder"></div>
+      </div>
+      <div class="range-display">
+        <svg class="hold-ring" viewBox="0 0 120 120">
+          <circle class="ring-bg" cx="60" cy="60" r="52"></circle>
+          <circle id="range-ring" class="ring-fg" cx="60" cy="60" r="52"></circle>
+        </svg>
+        <div id="range-note" class="big-note">–</div>
+      </div>
+      <button id="btn-range-skip" class="btn ghost">Skip — use a typical range</button>
+    </section>
+
+    <!-- Level select -->
+    <section id="screen-levels" class="screen">
+      <h2>Pick a level</h2>
+      <div class="range-chip">
+        <span id="range-chip-text"></span>
+        <button id="btn-redo-range" class="btn tiny">redo</button>
+      </div>
+      <div id="level-list"></div>
+      <button class="btn ghost btn-open-settings">⚙️ Settings</button>
+    </section>
+
+    <!-- Game -->
+    <section id="screen-game" class="screen">
+      <div class="game-top">
+        <button id="btn-game-back" class="btn icon" aria-label="back">‹</button>
+        <div class="game-top-mid">
+          <div id="game-level-name" class="game-level-name"></div>
+          <div id="game-progress" class="game-progress"></div>
+        </div>
+        <div class="game-score-wrap">
+          <span id="game-score" class="game-score">0</span>
+          <button class="btn icon btn-open-settings" aria-label="settings">⚙️</button>
+        </div>
+      </div>
+
+      <div class="staff-card">
+        <div id="staff-holder"></div>
+        <div id="note-label" class="note-label"></div>
+      </div>
+
+      <div id="feedback" class="feedback"></div>
+
+      <div class="meter">
+        <span class="meter-label">♭ low</span>
+        <div class="meter-track">
+          <div id="meter-zone" class="meter-zone"></div>
+          <div id="meter-needle" class="meter-needle hidden"></div>
+        </div>
+        <span class="meter-label">high ♯</span>
+      </div>
+
+      <div class="hold-track"><div id="hold-bar" class="hold-bar"></div></div>
+
+      <div id="streak" class="streak"></div>
+      <div id="game-hint" class="hint"></div>
+
+      <div class="game-buttons">
+        <button id="btn-hear" class="btn primary">🔊 Hear it</button>
+        <button id="btn-skip" class="btn ghost">Skip ›</button>
+      </div>
+    </section>
+
+    <!-- Round summary -->
+    <section id="screen-summary" class="screen">
+      <div id="summary-stars" class="summary-stars"></div>
+      <h2 id="summary-headline"></h2>
+      <p id="summary-score" class="summary-score"></p>
+      <p id="summary-detail" class="instructions"></p>
+      <button id="btn-again" class="btn primary big">Sing it again 🎤</button>
+      <button id="btn-to-levels" class="btn ghost">Back to levels</button>
+    </section>
+
+  </main>
+
+  <!-- Settings sheet -->
+  <div id="settings-sheet" class="sheet hidden">
+    <div class="sheet-body">
+      <h3>Settings</h3>
+      <label class="setting-label">Reference sound</label>
+      <div id="setting-instruments" class="chip-row"></div>
+      <label class="setting-label">Strictness</label>
+      <div id="setting-tolerance" class="chip-row"></div>
+      <label class="setting-toggle">
+        <input type="checkbox" id="setting-autoref">
+        Play the note for me automatically
+      </label>
+      <button id="btn-settings-range" class="btn ghost">🎼 Redo my range finder</button>
+      <button id="btn-settings-close" class="btn primary">Done</button>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

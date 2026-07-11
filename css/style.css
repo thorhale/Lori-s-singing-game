@@ -1,0 +1,210 @@
+/* Lori's Singing Game — touch-first, portrait-friendly. */
+
+:root {
+  --bg1: #241b3a;
+  --bg2: #3d2a5c;
+  --card: #fdf8ef;
+  --card-ink: #2b2140;
+  --ink: #f3edff;
+  --muted: #b9aed6;
+  --accent: #ff8fb1;
+  --accent-ink: #47122a;
+  --good: #43d17c;
+  --warn: #ffd166;
+  --staff: #3a3352;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: linear-gradient(160deg, var(--bg1), var(--bg2));
+  color: var(--ink);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+main {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  padding: max(16px, env(safe-area-inset-top)) 20px max(20px, env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+}
+
+.screen { display: none; flex: 1; flex-direction: column; align-items: center; gap: 14px; }
+.screen.active { display: flex; }
+
+.hidden { display: none !important; }
+
+/* ---- type ---- */
+h1 { font-size: 2rem; text-align: center; margin-top: 8px; }
+h2 { font-size: 1.4rem; text-align: center; }
+.tagline { color: var(--muted); font-size: 1.05rem; }
+.instructions { color: var(--ink); text-align: center; font-size: 1.05rem; line-height: 1.45; min-height: 3em; max-width: 34ch; }
+.error { color: var(--warn); text-align: center; max-width: 32ch; }
+.credits { color: var(--muted); font-size: 0.7rem; margin-top: auto; text-align: center; opacity: 0.7; }
+.hint { color: var(--muted); font-size: 0.9rem; min-height: 1.2em; text-align: center; }
+
+/* ---- buttons ---- */
+.btn {
+  border: none; border-radius: 16px; cursor: pointer;
+  font-size: 1.05rem; font-weight: 600; font-family: inherit;
+  padding: 14px 22px; color: var(--ink); background: rgba(255,255,255,0.12);
+  transition: transform 0.08s ease, background 0.15s ease;
+  touch-action: manipulation;
+}
+.btn:active { transform: scale(0.97); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); }
+.btn.big { font-size: 1.3rem; padding: 18px 34px; border-radius: 20px; }
+.btn.ghost { background: rgba(255,255,255,0.09); color: var(--muted); }
+.btn.tiny { padding: 6px 12px; font-size: 0.8rem; border-radius: 10px; }
+.btn.icon { padding: 10px 14px; font-size: 1.2rem; background: transparent; }
+
+.hero { font-size: 4rem; margin-top: 10vh; }
+#screen-welcome .btn.big { margin-top: 18px; }
+
+/* ---- staff card ---- */
+.staff-card {
+  width: 100%;
+  background: var(--card);
+  border-radius: 22px;
+  padding: 10px 12px 2px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+}
+.staff-card.small { max-width: 340px; }
+.staff-svg { width: 100%; display: block; }
+.staff-line { stroke: var(--staff); stroke-width: 2.2; stroke-linecap: round; }
+.staff-clef { fill: var(--card-ink); }
+.staff-accidental { fill: var(--card-ink); font-family: serif; }
+
+.staff-note .note-outer { fill: var(--card-ink); transition: fill 0.15s ease; }
+.staff-note .note-hole { fill: var(--card); }
+.staff-note[data-state="good"] .note-outer { fill: #1d9e57; }
+.staff-note[data-state="success"] .note-outer { fill: var(--good); }
+
+.note-label {
+  text-align: center; color: var(--card-ink);
+  font-size: 2.2rem; font-weight: 800; padding-bottom: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- game top bar ---- */
+.game-top { width: 100%; display: flex; align-items: center; justify-content: space-between; }
+.game-top-mid { text-align: center; }
+.game-level-name { font-weight: 700; }
+.game-progress { color: var(--muted); font-size: 0.85rem; }
+.game-score-wrap { display: flex; align-items: center; gap: 2px; }
+.game-score { font-weight: 800; font-size: 1.15rem; color: var(--warn); min-width: 2ch; text-align: right; }
+
+/* ---- feedback + tuner ---- */
+.feedback {
+  font-size: 1.35rem; font-weight: 700; min-height: 1.6em; text-align: center;
+}
+.feedback.good { color: var(--good); }
+.feedback.success { color: var(--good); }
+.feedback.off { color: var(--warn); }
+.feedback.listen, .feedback.sing { color: var(--muted); }
+
+.meter { width: 100%; display: flex; align-items: center; gap: 10px; }
+.meter-label { color: var(--muted); font-size: 0.8rem; white-space: nowrap; }
+.meter-track {
+  position: relative; flex: 1; height: 18px; border-radius: 9px;
+  background: rgba(255,255,255,0.10); overflow: hidden;
+}
+.meter-zone {
+  position: absolute; top: 0; bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  background: rgba(67, 209, 124, 0.28);
+  border-radius: 9px;
+}
+.meter-needle {
+  position: absolute; top: -2px; bottom: -2px; width: 5px;
+  background: var(--warn); border-radius: 3px;
+  transform: translateX(-50%);
+  transition: left 0.08s linear;
+}
+.meter-needle.in-tune { background: var(--good); }
+
+.hold-track {
+  width: 70%; height: 10px; border-radius: 5px;
+  background: rgba(255,255,255,0.10); overflow: hidden;
+}
+.hold-bar {
+  height: 100%; width: 0; border-radius: 5px;
+  background: linear-gradient(90deg, #7ee8a9, var(--good));
+  transition: width 0.1s linear;
+}
+
+.streak { min-height: 1.4em; color: var(--warn); font-weight: 700; }
+
+.game-buttons { display: flex; gap: 14px; margin-top: auto; padding-bottom: 6px; }
+.game-buttons .btn.primary { font-size: 1.15rem; padding: 16px 30px; }
+
+/* ---- range finder ---- */
+.range-display { position: relative; width: 150px; height: 150px; display: grid; place-items: center; }
+.hold-ring { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring-bg { fill: none; stroke: rgba(255,255,255,0.12); stroke-width: 9; }
+.ring-fg {
+  fill: none; stroke: var(--good); stroke-width: 9; stroke-linecap: round;
+  transition: stroke-dashoffset 0.1s linear;
+}
+.big-note { font-size: 2.4rem; font-weight: 800; }
+
+/* ---- levels ---- */
+.range-chip {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(255,255,255,0.09); border-radius: 999px;
+  padding: 8px 16px; color: var(--muted); font-size: 0.9rem;
+}
+#level-list { width: 100%; display: flex; flex-direction: column; gap: 12px; }
+.level-card {
+  display: flex; align-items: center; gap: 14px; width: 100%;
+  background: rgba(255,255,255,0.10); border: none; border-radius: 18px;
+  padding: 16px; color: var(--ink); font-family: inherit; text-align: left;
+  cursor: pointer; transition: transform 0.08s ease;
+}
+.level-card:active { transform: scale(0.98); }
+.level-card.locked { opacity: 0.45; cursor: default; }
+.level-emoji { font-size: 1.8rem; }
+.level-text { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.level-name { font-weight: 700; font-size: 1.1rem; }
+.level-blurb { color: var(--muted); font-size: 0.85rem; }
+.level-stars { font-size: 0.9rem; letter-spacing: 1px; }
+
+/* ---- summary ---- */
+.summary-stars { font-size: 3rem; margin-top: 8vh; }
+.summary-score { font-size: 1.3rem; font-weight: 800; color: var(--warn); }
+#screen-summary .btn.big { margin-top: 16px; }
+
+/* ---- settings sheet ---- */
+.sheet {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+  display: flex; align-items: flex-end; justify-content: center; z-index: 10;
+}
+.sheet-body {
+  width: 100%; max-width: 480px;
+  background: var(--bg1); border-radius: 24px 24px 0 0;
+  padding: 24px 22px calc(24px + env(safe-area-inset-bottom));
+  display: flex; flex-direction: column; gap: 14px;
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.4);
+}
+.setting-label { color: var(--muted); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+.chip-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.chip {
+  border: 2px solid rgba(255,255,255,0.15); background: transparent;
+  color: var(--ink); border-radius: 999px; padding: 10px 16px;
+  font-family: inherit; font-size: 0.95rem; font-weight: 600; cursor: pointer;
+}
+.chip.selected { border-color: var(--accent); background: rgba(255,143,177,0.15); }
+.setting-toggle { display: flex; align-items: center; gap: 10px; font-size: 1rem; padding: 6px 0; }
+.setting-toggle input { width: 22px; height: 22px; accent-color: var(--accent); }
+
+@media (min-width: 700px) {
+  h1 { font-size: 2.6rem; }
+  .hero { margin-top: 6vh; }
+}
