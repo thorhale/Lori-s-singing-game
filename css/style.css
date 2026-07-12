@@ -204,6 +204,76 @@ h2 { font-size: 1.4rem; text-align: center; }
 .setting-toggle { display: flex; align-items: center; gap: 10px; font-size: 1rem; padding: 6px 0; }
 .setting-toggle input { width: 22px; height: 22px; accent-color: var(--accent); }
 
+.btn.accent {
+  background: linear-gradient(120deg, #8a6cff, #b98cff);
+  color: #1c1030;
+}
+.top-spacer { width: 44px; }
+
+/* ---- scales & modes picker ---- */
+.instructions.small { min-height: 0; font-size: 0.95rem; }
+.chip-row.roots { justify-content: center; }
+.chip-row.roots .chip { padding: 9px 13px; min-width: 44px; font-weight: 700; }
+.setting-toggle.compact { justify-content: center; font-size: 0.95rem; color: var(--muted); }
+.setting-toggle.compact em { color: var(--ink); font-style: normal; font-weight: 700; }
+
+.scale-list { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+.scale-cat { color: var(--muted); font-size: 0.8rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em; margin: 8px 2px 0; }
+.scale-card {
+  display: flex; align-items: center; gap: 12px; width: 100%;
+  background: rgba(255,255,255,0.10); border: none; border-radius: 16px;
+  padding: 14px 16px; color: var(--ink); font-family: inherit; text-align: left;
+  cursor: pointer; transition: transform 0.08s ease;
+}
+.scale-card:active { transform: scale(0.98); }
+.scale-card .sc-text { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.scale-card .sc-name { font-weight: 700; font-size: 1.05rem; }
+.scale-card .sc-short { color: var(--muted); font-size: 0.83rem; }
+.scale-card .sc-check { color: var(--good); font-size: 1.1rem; }
+
+/* ---- theory practice ---- */
+.theory-info { width: 100%; text-align: center; }
+.theory-pattern {
+  font-weight: 800; letter-spacing: 0.14em; font-size: 1.05rem;
+  color: var(--warn); font-variant-numeric: tabular-nums;
+}
+.theory-mood { color: var(--muted); font-size: 0.9rem; margin-top: 2px; }
+
+.staff-card.scroll-card { padding: 6px 0 2px; overflow: hidden; }
+.scale-staff { position: relative; }
+.scale-scroll { overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
+.scale-svg { display: block; }
+.scale-cap {
+  position: absolute; top: 0; left: 0;
+  background: var(--card); border-right: 2px solid rgba(0,0,0,0.06);
+}
+.snote-head { fill: #b7b0c8; transition: fill 0.15s ease; }
+.snote-label { fill: #9a92b0; font-size: 15px; font-weight: 700; text-anchor: middle;
+  transition: fill 0.15s ease; }
+.snote[data-state="current"] .snote-head { fill: var(--card-ink); }
+.snote[data-state="current"] .snote-label { fill: var(--card-ink); }
+.snote[data-state="good"] .snote-head { fill: #1d9e57; }
+.snote[data-state="done"] .snote-head { fill: var(--good); }
+.snote[data-state="done"] .snote-label { fill: #1d9e57; }
+.snote[data-state="skip"] .snote-head { fill: #d98b9e; }
+
+.theory-buttons .btn { font-size: 1rem; padding: 14px 18px; }
+.theory-buttons .btn.primary { flex: 1; }
+
+.theory-done {
+  position: fixed; inset: 0; z-index: 8;
+  background: rgba(20, 14, 34, 0.72);
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+}
+.theory-done-card {
+  background: var(--bg2); border-radius: 22px; padding: 26px 22px;
+  max-width: 360px; width: 100%; text-align: center;
+  display: flex; flex-direction: column; gap: 12px;
+  box-shadow: 0 16px 44px rgba(0,0,0,0.5);
+}
+.theory-done-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
+
 @media (min-width: 700px) {
   h1 { font-size: 2.6rem; }
   .hero { margin-top: 6vh; }

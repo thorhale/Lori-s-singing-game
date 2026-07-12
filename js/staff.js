@@ -32,6 +32,30 @@ function el(name, attrs = {}) {
   return node;
 }
 
+// Builds a clef glyph <g>, scaled and positioned so the staff it belongs to has
+// line spacing `s`, top line at `topY`, bottom line at `bottomY`, with the glyph
+// nudged `padLeft` units from the left. Shared by Staff and the scale staff.
+export function clefGroup(clef, s, topY, bottomY, padLeft) {
+  const g = el('g');
+  if (clef === 'bass') {
+    const scale = s / BASS_CAL.spacing;
+    g.setAttribute('transform',
+      `translate(${padLeft - BASS_CAL.x0 * scale}, ${topY - BASS_CAL.topLineY * scale}) scale(${scale})`);
+    g.append(el('path', { d: BASS_CLEF_PATH, class: 'staff-clef' }));
+  } else {
+    const c = TREBLE_CAL;
+    const scale = (c.heightSpaces * s) / c.h;
+    const gLineY = bottomY - s; // G4 sits on the second line from the bottom
+    const ty = gLineY - (c.minY + c.h * c.gLineFrac) * scale;
+    g.setAttribute('transform',
+      `translate(${padLeft - c.minX * scale}, ${ty}) scale(${scale})`);
+    g.append(el('path', { d: TREBLE_CLEF_PATH, class: 'staff-clef' }));
+  }
+  return g;
+}
+
+export { el as svgEl, SVG_NS, BOTTOM_LINE_STEP };
+
 export class Staff {
   constructor(container) {
     this.svg = el('svg', {
@@ -58,25 +82,8 @@ export class Staff {
         class: 'staff-line',
       }));
     }
-    if (clef === 'bass') {
-      const scale = S / BASS_CAL.spacing;
-      const g = el('g', {
-        transform:
-          `translate(${26 - BASS_CAL.x0 * scale}, ${TOP_Y - BASS_CAL.topLineY * scale}) scale(${scale})`,
-      });
-      g.append(el('path', { d: BASS_CLEF_PATH, class: 'staff-clef' }));
-      this.staticGroup.append(g);
-    } else {
-      const c = TREBLE_CAL;
-      const scale = (c.heightSpaces * S) / c.h;
-      const gLineY = BOTTOM_Y - S; // G4 sits on the second line from the bottom
-      const ty = gLineY - (c.minY + c.h * c.gLineFrac) * scale;
-      const g = el('g', {
-        transform: `translate(${30 - c.minX * scale}, ${ty}) scale(${scale})`,
-      });
-      g.append(el('path', { d: TREBLE_CLEF_PATH, class: 'staff-clef' }));
-      this.staticGroup.append(g);
-    }
+    this.staticGroup.append(
+      clefGroup(clef, S, TOP_Y, BOTTOM_Y, clef === 'bass' ? 26 : 30));
   }
 
   clearNote() {

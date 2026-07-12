@@ -47,7 +47,77 @@
         <button id="btn-redo-range" class="btn tiny">redo</button>
       </div>
       <div id="level-list"></div>
+      <button id="btn-open-scales" class="btn accent">🎼 Scales &amp; Modes</button>
       <button class="btn ghost btn-open-settings">⚙️ Settings</button>
+    </section>
+
+    <!-- Scales & modes picker -->
+    <section id="screen-scales" class="screen">
+      <div class="game-top">
+        <button id="btn-scales-back" class="btn icon" aria-label="back">‹</button>
+        <div class="game-top-mid"><div class="game-level-name">🎼 Scales &amp; Modes</div></div>
+        <span class="top-spacer"></span>
+      </div>
+      <p class="instructions small">Pick a starting note, then a scale or mode to sing up and down.</p>
+      <label class="setting-label">Starting note (key)</label>
+      <div id="scale-roots" class="chip-row roots"></div>
+      <label class="setting-toggle compact">
+        <input type="checkbox" id="scale-updown" checked>
+        Sing up <em>and</em> back down
+      </label>
+      <div id="scale-list" class="scale-list"></div>
+    </section>
+
+    <!-- Scale / mode practice -->
+    <section id="screen-theory" class="screen">
+      <div class="game-top">
+        <button id="btn-theory-back" class="btn icon" aria-label="back">‹</button>
+        <div class="game-top-mid">
+          <div id="theory-title" class="game-level-name"></div>
+          <div id="theory-progress" class="game-progress"></div>
+        </div>
+        <button class="btn icon btn-open-settings" aria-label="settings">⚙️</button>
+      </div>
+
+      <div class="theory-info">
+        <div id="theory-pattern" class="theory-pattern"></div>
+        <div id="theory-mood" class="theory-mood"></div>
+      </div>
+
+      <div class="staff-card scroll-card">
+        <div id="scale-staff-holder"></div>
+      </div>
+
+      <div id="theory-feedback" class="feedback"></div>
+
+      <div class="meter">
+        <span class="meter-label">♭ low</span>
+        <div class="meter-track">
+          <div id="theory-meter-zone" class="meter-zone"></div>
+          <div id="theory-meter-needle" class="meter-needle hidden"></div>
+        </div>
+        <span class="meter-label">high ♯</span>
+      </div>
+      <div class="hold-track"><div id="theory-hold-bar" class="hold-bar"></div></div>
+
+      <div class="game-buttons theory-buttons">
+        <button id="btn-hear-scale" class="btn primary">🔊 Hear scale</button>
+        <button id="btn-hear-note" class="btn ghost">🔊 Note</button>
+        <button id="btn-theory-skip" class="btn ghost">Skip ›</button>
+      </div>
+
+      <div id="theory-done" class="theory-done hidden">
+        <div class="theory-done-card">
+          <div id="theory-done-emoji" class="summary-stars">🎉</div>
+          <h2 id="theory-done-headline"></h2>
+          <p id="theory-done-detail" class="instructions"></p>
+          <div class="theory-done-buttons">
+            <button id="btn-theory-next" class="btn primary">Next scale →</button>
+            <button id="btn-theory-again" class="btn ghost">Try again</button>
+            <button id="btn-theory-choose" class="btn ghost">Choose another</button>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- Game -->

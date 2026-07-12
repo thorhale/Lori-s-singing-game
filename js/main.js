@@ -9,6 +9,10 @@ import {
   LEVELS, TOLERANCES, NOTES_PER_ROUND,
   makeRound, NoteMatcher, noteScore, starsForRound, summarize,
 } from './game.js';
+import { ScaleStaff } from './scalestaff.js';
+import {
+  SCALES, ROOT_NAMES, stepPattern, buildScaleSequence, scaleTitle,
+} from './theory.js';
 
 const params = new URLSearchParams(location.search);
 const TEST_MODE = params.get('test') === '1';
@@ -55,18 +59,32 @@ const state = {
   detector: null,
   rangeLow: null,
   wakeLock: null,
+  // scales & modes
+  scaleStaff: null,
+  scaleRoot: store.get('lori.scaleRoot', 0),
+  scaleUpDown: true,
+  scaleDef: null,
+  scaleNotes: [],
+  scaleIdx: 0,
+  scaleMatcher: null,
+  scaleResults: [],
+  scaleAdvancing: false,
+  theoryDone: store.get('lori.theoryDone', {}),
 };
 
 function prettyName(midi, { octave = false } = {}) {
   return noteName(midi, { octave }).replace('#', '♯').replace('b', '♭');
 }
 
+const LIVE_SCREENS = new Set(['screen-game', 'screen-range', 'screen-theory']);
+
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach((s) => {
     s.classList.toggle('active', s.id === id);
   });
-  if (id !== 'screen-game' && id !== 'screen-range') state.mode = null;
-  if (id === 'screen-game') acquireWakeLock(); else releaseWakeLock();
+  if (!LIVE_SCREENS.has(id)) state.mode = null;
+  if (id === 'screen-game' || id === 'screen-theory') acquireWakeLock();
+  else releaseWakeLock();
 }
 
 async function acquireWakeLock() {
@@ -102,6 +120,7 @@ async function startListening() {
 function onPitchFrame(frame) {
   if (state.mode === 'range') rangeFrame(frame);
   else if (state.mode === 'game') gameFrame(frame);
+  else if (state.mode === 'theory') theoryFrame(frame);
 }
 
 // ---------------------------------------------------------------- welcome
@@ -229,6 +248,11 @@ function showLevels() {
 $('btn-redo-range').addEventListener('click', async () => {
   try { await startListening(); } catch { return; }
   startRangeFinder();
+});
+
+$('btn-open-scales').addEventListener('click', async () => {
+  try { await startListening(); } catch { return; }
+  showScales();
 });
 
 // --------------------------------------------------------------------- game
@@ -385,6 +409,238 @@ function finishRound() {
 $('btn-again').addEventListener('click', () => startLevel(state.level));
 $('btn-to-levels').addEventListener('click', showLevels);
 
+// ---------------------------------------------------------- scales & modes
+
+function showScales() {
+  // Starting-note chips.
+  const roots = $('scale-roots');
+  roots.replaceChildren();
+  ROOT_NAMES.forEach((name, pc) => {
+    const btn = document.createElement('button');
+    btn.className = 'chip' + (state.scaleRoot === pc ? ' selected' : '');
+    btn.textContent = name;
+    btn.addEventListener('click', () => {
+      state.scaleRoot = pc;
+      store.set('lori.scaleRoot', pc);
+      showScales();
+    });
+    roots.appendChild(btn);
+  });
+
+  $('scale-updown').checked = state.scaleUpDown;
+
+  // Scale/mode cards grouped by category.
+  const list = $('scale-list');
+  list.replaceChildren();
+  let lastCat = null;
+  SCALES.forEach((def) => {
+    if (def.category !== lastCat) {
+      lastCat = def.category;
+      const h = document.createElement('div');
+      h.className = 'scale-cat';
+      h.textContent = def.category;
+      list.appendChild(h);
+    }
+    const done = state.theoryDone[`${def.id}:${state.scaleRoot}`];
+    const btn = document.createElement('button');
+    btn.className = 'scale-card';
+    btn.innerHTML = `
+      <span class="sc-text">
+        <span class="sc-name">${ROOT_NAMES[state.scaleRoot]} ${def.name}</span>
+        <span class="sc-short">${def.short}</span>
+      </span>
+      <span class="sc-check">${done ? '✓' : ''}</span>`;
+    btn.addEventListener('click', () => startScale(def));
+    list.appendChild(btn);
+  });
+
+  showScreen('screen-scales');
+}
+
+$('scale-updown').addEventListener('change', (e) => {
+  state.scaleUpDown = e.target.checked;
+});
+$('btn-scales-back').addEventListener('click', () => {
+  state.mode = null;
+  showLevels();
+});
+
+function startScale(def) {
+  state.scaleDef = def;
+  const { notes, spellings } = buildScaleSequence(state.scaleRoot, def, state.range, {
+    upDown: state.scaleUpDown,
+  });
+  state.scaleNotes = notes;
+  state.scaleSpellings = spellings;
+  state.scaleIdx = 0;
+  state.scaleResults = [];
+  state.scaleAdvancing = false;
+
+  if (!state.scaleStaff) state.scaleStaff = new ScaleStaff($('scale-staff-holder'));
+  const clef = clefForRange(Math.min(...notes), Math.max(...notes));
+  state.scaleStaff.setScale(notes, clef, spellings);
+
+  $('theory-title').textContent = scaleTitle(state.scaleRoot, def);
+  $('theory-pattern').textContent = stepPattern(def.intervals);
+  $('theory-mood').textContent = def.short;
+  $('theory-done').classList.add('hidden');
+
+  showScreen('screen-theory');
+  state.mode = 'theory';
+  theoryNextNote();
+}
+
+function scaleTarget() { return state.scaleNotes[state.scaleIdx]; }
+
+function theoryNextNote() {
+  const midi = scaleTarget();
+  state.scaleMatcher = new NoteMatcher(midi, toleranceCents());
+  state.scaleAdvancing = false;
+  state.scaleStaff.setNoteState(state.scaleIdx, 'current');
+  state.scaleStaff.scrollToNote(state.scaleIdx);
+  const label = state.scaleSpellings?.[state.scaleIdx]?.label ?? prettyName(midi);
+  $('theory-progress').textContent =
+    `Note ${state.scaleIdx + 1} of ${state.scaleNotes.length} — sing ${label}`;
+  setTheoryFeedback('listen');
+  setTheoryHold(0);
+  if (state.settings.autoRef) theoryPlayNote();
+  else setTheoryFeedback('sing');
+}
+
+function theoryPlayNote() {
+  state.instruments.play(scaleTarget(), state.settings.instrument, 0.9);
+  state.refPlayingUntil = performance.now() + 900 + 250;
+  setTheoryFeedback('listen');
+}
+
+$('btn-hear-note').addEventListener('click', () => {
+  if (state.mode === 'theory' && !state.scaleAdvancing) theoryPlayNote();
+});
+
+$('btn-hear-scale').addEventListener('click', () => {
+  if (state.mode !== 'theory') return;
+  const secs = state.instruments.playSequence(
+    state.scaleNotes, state.settings.instrument, { noteDur: 0.42, gap: 0.08 });
+  state.refPlayingUntil = performance.now() + secs * 1000 + 250;
+  setTheoryFeedback('listen');
+});
+
+$('btn-theory-skip').addEventListener('click', () => {
+  if (state.mode !== 'theory' || state.scaleAdvancing) return;
+  state.scaleStaff.setNoteState(state.scaleIdx, 'skip');
+  state.scaleResults.push({ midi: scaleTarget(), skipped: true });
+  theoryAdvance();
+});
+
+$('btn-theory-back').addEventListener('click', () => {
+  state.mode = null;
+  showScales();
+});
+
+function theoryFrame(frame) {
+  if (state.scaleAdvancing) return;
+  if (performance.now() < state.refPlayingUntil) {
+    setTheoryFeedback('listen');
+    return;
+  }
+  const st = state.scaleMatcher.update(frame);
+  setTheoryHold(st.progress);
+  if (st.state === 'done') {
+    onScaleNoteSuccess();
+    return;
+  }
+  setTheoryMeter(st.cents);
+  if (st.state === 'good') {
+    state.scaleStaff.setNoteState(state.scaleIdx, 'good');
+    setTheoryFeedback('good');
+  } else if (st.state === 'high') {
+    setTheoryFeedback('high');
+  } else if (st.state === 'low') {
+    setTheoryFeedback('low');
+  } else {
+    setTheoryFeedback('sing');
+  }
+}
+
+function onScaleNoteSuccess() {
+  state.scaleAdvancing = true;
+  state.scaleResults.push({ midi: scaleTarget(), skipped: false });
+  state.scaleStaff.setNoteState(state.scaleIdx, 'done');
+  setTheoryFeedback('success');
+  setTheoryHold(1);
+  state.instruments.chime();
+  setTimeout(theoryAdvance, 600);
+}
+
+function theoryAdvance() {
+  state.scaleIdx += 1;
+  if (state.scaleIdx >= state.scaleNotes.length) theoryFinish();
+  else theoryNextNote();
+}
+
+function theoryFinish() {
+  state.mode = null;
+  const hit = state.scaleResults.filter((r) => !r.skipped).length;
+  const total = state.scaleResults.length;
+  const perfect = hit === total;
+  if (perfect) {
+    state.theoryDone[`${state.scaleDef.id}:${state.scaleRoot}`] = true;
+    store.set('lori.theoryDone', state.theoryDone);
+  }
+  $('theory-done-emoji').textContent = perfect ? '🎉' : '🌱';
+  $('theory-done-headline').textContent = perfect
+    ? `You sang the whole ${state.scaleDef.name}!`
+    : 'Nice practice!';
+  $('theory-done-detail').textContent =
+    `You nailed ${hit} of ${total} notes in ${scaleTitle(state.scaleRoot, state.scaleDef)}.`;
+
+  const idx = SCALES.indexOf(state.scaleDef);
+  const next = SCALES[idx + 1];
+  const nextBtn = $('btn-theory-next');
+  if (next) {
+    nextBtn.textContent = `Next: ${next.name} →`;
+    nextBtn.classList.remove('hidden');
+  } else {
+    nextBtn.classList.add('hidden');
+  }
+  $('theory-done').classList.remove('hidden');
+}
+
+$('btn-theory-again').addEventListener('click', () => startScale(state.scaleDef));
+$('btn-theory-choose').addEventListener('click', () => {
+  $('theory-done').classList.add('hidden');
+  showScales();
+});
+$('btn-theory-next').addEventListener('click', () => {
+  const next = SCALES[SCALES.indexOf(state.scaleDef) + 1];
+  if (next) startScale(next);
+});
+
+// Theory-screen feedback widgets (mirror the game's, with their own elements).
+function setTheoryFeedback(kind) {
+  const f = FEEDBACK[kind];
+  const el = $('theory-feedback');
+  if (el.dataset.kind === kind) return;
+  el.dataset.kind = kind;
+  el.textContent = f.text;
+  el.className = 'feedback ' + f.cls;
+  if (kind === 'listen' || kind === 'sing' || kind === 'success') setTheoryMeter(null);
+}
+
+function setTheoryMeter(cents) {
+  const needle = $('theory-meter-needle');
+  if (cents == null) { needle.classList.add('hidden'); return; }
+  needle.classList.remove('hidden');
+  const clamped = Math.max(-METER_RANGE, Math.min(METER_RANGE, cents));
+  needle.style.left = `${50 + (clamped / METER_RANGE) * 50}%`;
+  needle.classList.toggle('in-tune', Math.abs(cents) <= toleranceCents());
+  $('theory-meter-zone').style.width = `${(toleranceCents() / METER_RANGE) * 100}%`;
+}
+
+function setTheoryHold(progress) {
+  $('theory-hold-bar').style.width = `${Math.min(1, progress) * 100}%`;
+}
+
 // ----------------------------------------------------------------- feedback
 
 const FEEDBACK = {
@@ -510,6 +766,9 @@ if (TEST_MODE) {
     setTone: (freq, vol = 0.5) => state.engine.setTestTone(freq, vol),
     midiToFreq,
     startLevel: (i) => startLevel(LEVELS[i]),
+    showScales,
+    startScale: (id) => startScale(SCALES.find((s) => s.id === id)),
+    SCALES,
   };
 }
 
