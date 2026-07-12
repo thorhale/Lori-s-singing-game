@@ -52,6 +52,19 @@ export class Instruments {
     return duration;
   }
 
+  // Plays a list of notes one after another as a reference. Returns the total
+  // duration in seconds so the caller can pause pitch matching meanwhile.
+  playSequence(midis, instrument = 'piano', { noteDur = 0.5, gap = 0.12 } = {}) {
+    if (this.ctx.state !== 'running') this.ctx.resume();
+    let t = 0;
+    for (const m of midis) {
+      const at = t;
+      setTimeout(() => this.play(m, instrument, noteDur), at * 1000);
+      t += noteDur + gap;
+    }
+    return t;
+  }
+
   // Short two-note sparkle for a correctly sung note.
   chime() {
     const t = this.ctx.currentTime;
