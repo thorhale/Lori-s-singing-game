@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-  <meta name="theme-color" content="#241b3a">
+  <meta name="theme-color" content="#1c1430">
   <title>Lori’s Singing Game</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎵</text></svg>">
   <link rel="stylesheet" href="css/style.css">
@@ -12,20 +12,22 @@
   <main>
 
     <!-- Welcome -->
-    <section id="screen-welcome" class="screen active">
+    <section id="screen-welcome" class="screen center active">
       <div class="hero">🎶</div>
       <h1>Lori’s Singing Game</h1>
       <p class="tagline">See a note. Sing it. Shine. ✨</p>
-      <button id="btn-start" class="btn primary big">Let’s sing! 🎤</button>
-      <button id="btn-welcome-settings" class="btn ghost">⚙️ Settings</button>
+      <div class="actions">
+        <button id="btn-start" class="btn primary big">Let’s sing! 🎤</button>
+        <button id="btn-welcome-settings" class="btn ghost">⚙️ Settings</button>
+      </div>
       <p id="mic-error" class="error hidden"></p>
       <p class="credits">Piano sound: Salamander Grand Piano by Alexander Holm (CC-BY)</p>
     </section>
 
     <!-- Range finder -->
-    <section id="screen-range" class="screen">
+    <section id="screen-range" class="screen center">
       <h2 id="range-title">Find your range</h2>
-      <p id="range-instructions" class="instructions"></p>
+      <p id="range-instructions" class="instructions tall"></p>
       <div class="staff-card small">
         <div id="range-staff-holder"></div>
       </div>
@@ -40,28 +42,30 @@
     </section>
 
     <!-- Level select -->
-    <section id="screen-levels" class="screen">
+    <section id="screen-levels" class="screen menu">
       <h2>Pick a level</h2>
       <div class="range-chip">
         <span id="range-chip-text"></span>
         <button id="btn-redo-range" class="btn tiny">redo</button>
       </div>
       <div id="level-list"></div>
-      <button id="btn-open-scales" class="btn accent">🎼 Scales &amp; Modes</button>
-      <button class="btn ghost btn-open-settings">⚙️ Settings</button>
+      <div class="actions">
+        <button id="btn-open-scales" class="btn accent">🎼 Scales &amp; Modes</button>
+        <button class="btn ghost btn-open-settings">⚙️ Settings</button>
+      </div>
     </section>
 
     <!-- Scales & modes picker -->
-    <section id="screen-scales" class="screen">
-      <div class="game-top">
+    <section id="screen-scales" class="screen menu">
+      <div class="topbar">
         <button id="btn-scales-back" class="btn icon" aria-label="back">‹</button>
-        <div class="game-top-mid"><div class="game-level-name">🎼 Scales &amp; Modes</div></div>
+        <div class="topbar-mid"><div class="topbar-title">🎼 Scales &amp; Modes</div></div>
         <span class="top-spacer"></span>
       </div>
-      <p class="instructions small">Pick a starting note, then a scale or mode to sing up and down.</p>
-      <label class="setting-label">Starting note (key)</label>
+      <p class="instructions small">Pick a starting note, then a scale or mode to sing up and back down.</p>
+      <span class="section-label">Starting note (key)</span>
       <div id="scale-roots" class="chip-row roots"></div>
-      <label class="setting-toggle compact">
+      <label class="toggle">
         <input type="checkbox" id="scale-updown" checked>
         Sing up <em>and</em> back down
       </label>
@@ -69,38 +73,43 @@
     </section>
 
     <!-- Scale / mode practice -->
-    <section id="screen-theory" class="screen">
-      <div class="game-top">
+    <section id="screen-theory" class="screen play">
+      <div class="topbar">
         <button id="btn-theory-back" class="btn icon" aria-label="back">‹</button>
-        <div class="game-top-mid">
-          <div id="theory-title" class="game-level-name"></div>
-          <div id="theory-progress" class="game-progress"></div>
+        <div class="topbar-mid">
+          <div id="theory-title" class="topbar-title"></div>
+          <div id="theory-progress" class="topbar-sub"></div>
         </div>
-        <button class="btn icon btn-open-settings" aria-label="settings">⚙️</button>
-      </div>
-
-      <div class="theory-info">
-        <div id="theory-pattern" class="theory-pattern"></div>
-        <div id="theory-mood" class="theory-mood"></div>
-      </div>
-
-      <div class="staff-card scroll-card">
-        <div id="scale-staff-holder"></div>
-      </div>
-
-      <div id="theory-feedback" class="feedback"></div>
-
-      <div class="meter">
-        <span class="meter-label">♭ low</span>
-        <div class="meter-track">
-          <div id="theory-meter-zone" class="meter-zone"></div>
-          <div id="theory-meter-needle" class="meter-needle hidden"></div>
+        <div class="topbar-right">
+          <button class="btn icon btn-open-settings" aria-label="settings">⚙️</button>
         </div>
-        <span class="meter-label">high ♯</span>
       </div>
-      <div class="hold-track"><div id="theory-hold-bar" class="hold-bar"></div></div>
 
-      <div class="game-buttons theory-buttons">
+      <div class="play-body">
+        <div class="theory-info">
+          <div id="theory-pattern" class="theory-pattern"></div>
+          <div id="theory-mood" class="theory-mood"></div>
+        </div>
+
+        <div class="staff-card scroll-card">
+          <div id="scale-staff-holder"></div>
+        </div>
+
+        <div class="coach">
+          <div id="theory-feedback" class="feedback"></div>
+          <div class="meter">
+            <span class="meter-label">♭ low</span>
+            <div class="meter-track">
+              <div id="theory-meter-zone" class="meter-zone"></div>
+              <div id="theory-meter-needle" class="meter-needle hidden"></div>
+            </div>
+            <span class="meter-label">high ♯</span>
+          </div>
+          <div class="hold-track"><div id="theory-hold-bar" class="hold-bar"></div></div>
+        </div>
+      </div>
+
+      <div class="play-footer">
         <button id="btn-hear-scale" class="btn primary">🔊 Hear scale</button>
         <button id="btn-hear-note" class="btn ghost">🔊 Note</button>
         <button id="btn-theory-skip" class="btn ghost">Skip ›</button>
@@ -121,54 +130,59 @@
     </section>
 
     <!-- Game -->
-    <section id="screen-game" class="screen">
-      <div class="game-top">
+    <section id="screen-game" class="screen play">
+      <div class="topbar">
         <button id="btn-game-back" class="btn icon" aria-label="back">‹</button>
-        <div class="game-top-mid">
-          <div id="game-level-name" class="game-level-name"></div>
-          <div id="game-progress" class="game-progress"></div>
+        <div class="topbar-mid">
+          <div id="game-level-name" class="topbar-title"></div>
+          <div id="game-progress" class="topbar-sub"></div>
         </div>
-        <div class="game-score-wrap">
-          <span id="game-score" class="game-score">0</span>
+        <div class="topbar-right">
+          <span id="game-score" class="score">0</span>
           <button class="btn icon btn-open-settings" aria-label="settings">⚙️</button>
         </div>
       </div>
 
-      <div class="staff-card">
-        <div id="staff-holder"></div>
-        <div id="note-label" class="note-label"></div>
-      </div>
-
-      <div id="feedback" class="feedback"></div>
-
-      <div class="meter">
-        <span class="meter-label">♭ low</span>
-        <div class="meter-track">
-          <div id="meter-zone" class="meter-zone"></div>
-          <div id="meter-needle" class="meter-needle hidden"></div>
+      <div class="play-body">
+        <div class="staff-card">
+          <div id="staff-holder"></div>
+          <div id="note-label" class="note-label"></div>
         </div>
-        <span class="meter-label">high ♯</span>
+
+        <div class="coach">
+          <div id="feedback" class="feedback"></div>
+          <div class="meter">
+            <span class="meter-label">♭ low</span>
+            <div class="meter-track">
+              <div id="meter-zone" class="meter-zone"></div>
+              <div id="meter-needle" class="meter-needle hidden"></div>
+            </div>
+            <span class="meter-label">high ♯</span>
+          </div>
+          <div class="hold-track"><div id="hold-bar" class="hold-bar"></div></div>
+          <div class="coach-status">
+            <span id="streak" class="streak"></span>
+            <span id="game-hint" class="hint"></span>
+          </div>
+        </div>
       </div>
 
-      <div class="hold-track"><div id="hold-bar" class="hold-bar"></div></div>
-
-      <div id="streak" class="streak"></div>
-      <div id="game-hint" class="hint"></div>
-
-      <div class="game-buttons">
+      <div class="play-footer">
         <button id="btn-hear" class="btn primary">🔊 Hear it</button>
         <button id="btn-skip" class="btn ghost">Skip ›</button>
       </div>
     </section>
 
     <!-- Round summary -->
-    <section id="screen-summary" class="screen">
+    <section id="screen-summary" class="screen center">
       <div id="summary-stars" class="summary-stars"></div>
       <h2 id="summary-headline"></h2>
       <p id="summary-score" class="summary-score"></p>
       <p id="summary-detail" class="instructions"></p>
-      <button id="btn-again" class="btn primary big">Sing it again 🎤</button>
-      <button id="btn-to-levels" class="btn ghost">Back to levels</button>
+      <div class="actions">
+        <button id="btn-again" class="btn primary big">Sing it again 🎤</button>
+        <button id="btn-to-levels" class="btn ghost">Back to levels</button>
+      </div>
     </section>
 
   </main>
@@ -177,11 +191,11 @@
   <div id="settings-sheet" class="sheet hidden">
     <div class="sheet-body">
       <h3>Settings</h3>
-      <label class="setting-label">Reference sound</label>
+      <span class="section-label">Reference sound</span>
       <div id="setting-instruments" class="chip-row"></div>
-      <label class="setting-label">Strictness</label>
+      <span class="section-label">Strictness</span>
       <div id="setting-tolerance" class="chip-row"></div>
-      <label class="setting-toggle">
+      <label class="toggle">
         <input type="checkbox" id="setting-autoref">
         Play the note for me automatically
       </label>
